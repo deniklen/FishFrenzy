@@ -9,10 +9,11 @@ from OpenGL.GLUT import *
 from scipy import interpolate
 
 pygame.init()
+glutInit() # Initialize Glut Features
 
 path = "./data/"
 # Possible levels ==> [Score to pass, maximum time]
-levels = [[40, 30], [60, 40], [80, 50], [90, 60], [100, 70]]  # 5 levels
+levels = [[40, 30], [45, 40], [50, 50], [55, 60], [60, 70]]  # 5 levels
 level = 1  # initial level,
 
 seconds = 0  # the actual timer of every level
@@ -26,43 +27,53 @@ vertical_displacement = 2  # 'DECREASING'  = decreasing vertical motion which me
 x_displacement = 0.2  # Speed of small fish
 ##################################################
 
-
+start = 0
 score = 0
 big_fish_size = 1.6
 texture = ()
+current_x = 0
+current_y = 0
 mouse_dir = 1
+
 photos = ['Fishleft1.png', 'Fishright1.png', 'Fishleft2.png', 'Fishright2.png', 'Fishleft3.png', 'Fishright3.png',
           'Fishleft4.png', 'Fishright4.png', 'Fishleft5.png', 'Fishright5.png', 'Fishleft6.png', 'Fishright6.png',
           'Fishleft7.png', 'Fishright7.png', 'Fishleft8.png', 'Fishright8.png', 'Fishleft9.png', 'Fishright9.png',
           'Fishleft10.png', 'Fishright10.png', 'Fishleft11.png', 'Fishright11.png', 'background.jpg', 'menu.png']
 
-current_x = 0
-current_y = 0
+
 
 
 # Small Function to generate the vertical offset
 def random_offset():
-    return randint(vertical_displacement + 10, 600 - vertical_displacement - 10)
+    return randint(vertical_displacement + 10, int(glutGet(GLUT_SCREEN_HEIGHT)) - vertical_displacement - 10)
 
 
-x_points = [i for i in range(-50, 750, x_ax)]
+x_points = [i for i in range(-50, int(glutGet(GLUT_SCREEN_WIDTH)) + 50, x_ax)]
 num_points = len(x_points)
 
+
+
+#divider used for easier code reading
+divider = [int(glutGet(GLUT_SCREEN_HEIGHT) * 0.2), 
+           int(glutGet(GLUT_SCREEN_HEIGHT) * 0.4),
+           int(glutGet(GLUT_SCREEN_HEIGHT) * 0.6),
+           int(glutGet(GLUT_SCREEN_HEIGHT) * 0.8),
+           int(glutGet(GLUT_SCREEN_HEIGHT))] 
+
 # A[0_X_pos, 1_Y_pos, 2_Scale, 3_dir_X, 4_pattern_num, 5_y_offset, 6 Shape ]
-
 # The 7th dimension refers to the vertical offset
-A = [[0, 120, 1.1, 1, 0, random_offset(), 1],
-     [0, 240, 3, 1, 1, random_offset(), 3],
-     [0, 360, 1.1, 1, 2, random_offset(), 5],
-     [0, 480, 3, 1, 3, random_offset(), 7],
-     [0, 600, 1.1, 1, 4, random_offset(), 9],
-     [600, 120, 3, -1, 4, random_offset(), 0],
-     [600, 240, 1.1, -1, 3, random_offset(), 2],
-     [600, 360, 3, -1, 2, random_offset(), 4],
-     [600, 480, 1.1, -1, 1, random_offset(), 6],
-     [600, 600, 3, -1, 0, random_offset(), 8]]
-count = len(A)
+A = [[0, divider[0], 1.1, 1, 0, random_offset(), 1],
+     [0, divider[1], 3, 1, 1, random_offset(), 3],
+     [0, divider[2], 1.1, 1, 2, random_offset(), 5],
+     [0, divider[3], 3, 1, 3, random_offset(), 7],
+     [0, divider[4], 1.1, 1, 4, random_offset(), 9],
+     [int(glutGet(GLUT_SCREEN_WIDTH)), divider[0], 3, -1, 4, random_offset(), 0],
+     [int(glutGet(GLUT_SCREEN_WIDTH)), divider[1], 1.1, -1, 3, random_offset(), 2],
+     [int(glutGet(GLUT_SCREEN_WIDTH)), divider[2], 3, -1, 2, random_offset(), 4],
+     [int(glutGet(GLUT_SCREEN_WIDTH)), divider[3], 1.1, -1, 1, random_offset(), 6],
+     [int(glutGet(GLUT_SCREEN_WIDTH)), divider[4], 3, -1, 0, random_offset(), 8]]
 
+count = len(A)
 paths = []
 lost_flag = 0
 
@@ -73,7 +84,7 @@ def generate_patterns():
     for j in range(patterns_num):
         new_path = []
         for i in range(num_points):
-            new_path.append(randint(300 - vertical_displacement, 300 + vertical_displacement))
+            new_path.append(randint(int(glutGet(GLUT_SCREEN_HEIGHT)) - vertical_displacement, int(glutGet(GLUT_SCREEN_HEIGHT)) + vertical_displacement))
 
         paths.append(interpolate.splrep(x_points, new_path))  # tck
 
@@ -84,9 +95,9 @@ def f(i):
     if A[i][3] == 1:
         f_x = interpolate.splev(A[i][0], paths[A[i][4]])
     else:
-        f_x = 600 - interpolate.splev(A[i][0], paths[A[i][4]])
+        f_x = int(glutGet(GLUT_SCREEN_WIDTH)) - interpolate.splev(A[i][0], paths[A[i][4]])
 
-    if A[i][0] > 650:
+    if A[i][0] > int(glutGet(GLUT_SCREEN_WIDTH)) + 50:
         A[i][3] = -A[i][3]
         A[i][6] = A[i][6] - 1  # look at
 
@@ -94,7 +105,7 @@ def f(i):
         A[i][3] = -A[i][3]
         A[i][6] = A[i][6] + 1
 
-    return f_x + A[i][5] - 300
+    return f_x + A[i][5] - (int(glutGet(GLUT_SCREEN_WIDTH)) / 2)
 
 
 def drawtext(string, x, y):
@@ -128,6 +139,7 @@ def add_small_fish():
     else:
         new_fish_shape = random.choice([0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
         direction = -1
+
     A.append(list((new_rand_x, 0, scale, direction, new_rand_pattern, random_offset(), new_fish_shape)))
 
 
@@ -148,13 +160,13 @@ def increase_Score():
     score += 1
 
 
-def eating_soound():
+def eating_sound():
     s_file = pygame.mixer.Sound("eating.wav")
     s_file.play()
 
 
 def game_over_sound():
-    s_file = pygame.mixer.Sound("gameover.wav")
+    s_file = pygame.mixer.Sound("gameover.wav") 
     s_file.play()
 
 
@@ -171,7 +183,7 @@ def collsion(i):
         remove_small_fish(i)
         increase_Score()
         add_small_fish()
-        eating_soound()
+        eating_sound()
 
 
 def load_texture():
@@ -198,16 +210,16 @@ def myint():
 
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glOrtho(0, 600, 600, 0, 0, 600)
+    glOrtho(0, int(glutGet(GLUT_SCREEN_WIDTH)), int(glutGet(GLUT_SCREEN_HEIGHT)), 0, -1.0, 1.0)
     load_texture()
-    # gluLookAt(0,0,1,0,0,0,0,1,0) #eye, look at, up vector
     glClearColor(1, 1, 1, .5)
     generate_patterns()
 
 
 def start_again():
-    global lost_flag, A, score, big_fish_size, score, time_start
+    global lost_flag, A, score, big_fish_size, score, start, time_start
 
+    start = 0
     score = 0
     big_fish_size = 1.6
     lost_flag = 0
@@ -226,15 +238,15 @@ def menu():
     glBindTexture(GL_TEXTURE_2D, texture[-1])
     glColor(1, 1, 1)
     glBegin(GL_QUADS)
-    glutFullScreen(GL_TEXTURE_2D)
+    glutFullScreen()
     glTexCoord(1, 1)
     glVertex3f(0, 0, 0)
     glTexCoord(0, 1)
-    glVertex3f(600, 0, 0)
+    glVertex3f(int(glutGet(GLUT_SCREEN_WIDTH)), 0, 0)
     glTexCoord(0, 0)
-    glVertex3f(600, 600, 0)
+    glVertex3f(int(glutGet(GLUT_SCREEN_WIDTH)), int(glutGet(GLUT_SCREEN_HEIGHT)), 0)
     glTexCoord(1, 0)
-    glVertex3f(0, 600, 0)
+    glVertex3f(0, int(glutGet(GLUT_SCREEN_HEIGHT)), 0)
     glEnd()
 
     glFlush()
@@ -243,14 +255,17 @@ def menu():
 def keyboard(key, x, y):
     global level
     if key == b"x":
-        exit("Exit !")
+        glutDestroyWindow(glutGetWindow())
+        exit("Exit !")        
     if key == b"a":  # play
         start_time()
         glutIdleFunc(main_scene)
+        glutSetCursor(GLUT_CURSOR_NONE)
 
-    if key == b"r":  # statr again
+    if key == b"r":  # start again
         start_again()
         glutIdleFunc(main_scene)
+        glutSetCursor(GLUT_CURSOR_NONE)
 
 
 ##########################################################################################
@@ -265,7 +280,7 @@ def main_scene():
         enlargement = score / 20
         big_fish_size = 1.6 + (enlargement * 2)
     if score >= 20:
-        big_fish_size = 4 + enlargement
+        big_fish_size = 2.5 + enlargement
     if score >= 60:
         big_fish_size = 6 + enlargement
 
@@ -278,13 +293,13 @@ def main_scene():
 
         glBegin(GL_QUADS)
         glTexCoord(0, 0)
-        glVertex3f(600, 600, 0)
+        glVertex3f(int(glutGet(GLUT_SCREEN_WIDTH)), int(glutGet(GLUT_SCREEN_HEIGHT)), 0)
         glTexCoord(0, 1)
-        glVertex3f(600, 0, 0)
+        glVertex3f(int(glutGet(GLUT_SCREEN_WIDTH)), 0, 0)
         glTexCoord(1, 1)
         glVertex3f(0, 0, 0)
         glTexCoord(1, 0)
-        glVertex3f(0, 600, 0)
+        glVertex3f(0, int(glutGet(GLUT_SCREEN_HEIGHT)), 0)
         glEnd()
 
         # Texture Added
@@ -304,6 +319,12 @@ def main_scene():
 
         drawtext(string, 20, 70)
         glLoadIdentity()
+
+        global start
+        if start == 0:
+            glutWarpPointer(int(glutGet(GLUT_SCREEN_WIDTH) / 2), int(glutGet(GLUT_SCREEN_HEIGHT) / 2))
+            glTranslate(int(glutGet(GLUT_SCREEN_WIDTH) / glutGet(GLUT_SCREEN_HEIGHT)), int(glutGet(GLUT_SCREEN_HEIGHT) / 2), 0)
+            start = 1
 
         glTranslate(current_x, current_y, 0)
         glColor4f(1, 1, 1, 1)
@@ -395,23 +416,18 @@ def mouse(new_x, new_y):
     current_y = new_y
 
 
-
-
 def main():
-    glutInit()  # Initialize Glut Features
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA)  # Initialize Window Options
-    glutInitWindowSize(1080, 920)
+    glutInitWindowSize(int(glutGet(GLUT_SCREEN_WIDTH)), int(glutGet(GLUT_SCREEN_HEIGHT)))
     glutCreateWindow(b"fish")
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)  # Blend
     glEnable(GL_BLEND)
-
+  
     myint()
     glutKeyboardFunc(keyboard)
     glutIdleFunc(menu)
-    glutWarpPointer(600, 600)
-    glutPassiveMotionFunc(mouse)
+    glutPassiveMotionFunc((mouse))
     glutDisplayFunc(menu)
     glutMainLoop()
-
-
+   
 main()
