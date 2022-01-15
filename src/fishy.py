@@ -23,7 +23,7 @@ x_ax = 100  # 'INCREASING'  = increasing number of curve points which means 'MOR
 patterns_num = 5  # Number of Available patterns (integer)
 
 vertical_displacement = 2  # 'DECREASING'  = decreasing vertical motion which means 'MORE STABLE' Motion
-x_displacement = 0.2  # Speed of small fish
+x_displacement = 0.2# Speed of small fish
 ##################################################
 
 start = 0
@@ -34,10 +34,10 @@ current_x = 0
 current_y = 0
 mouse_dir = 1
 
-photos = ['Fishleft1.png', 'Fishright1.png', 'Fishleft2.png', 'Fishright2.png', 'Fishleft3.png', 'Fishright3.png',
-          'Fishleft4.png', 'Fishright4.png', 'Fishleft5.png', 'Fishright5.png', 'Fishleft6.png', 'Fishright6.png',
-          'Fishleft7.png', 'Fishright7.png', 'Fishleft8.png', 'Fishright8.png', 'Fishleft9.png', 'Fishright9.png',
-          'Fishleft10.png', 'Fishright10.png', 'Fishleft11.png', 'Fishright11.png', 'background.jpg', 'menu.jpg']
+photos = ['data/Fishleft1.png', 'data/Fishright1.png', 'data/Fishleft2.png', 'data/Fishright2.png', 'data/Fishleft3.png', 'data/Fishright3.png',
+          'data/Fishleft4.png', 'data/Fishright4.png', 'data/Fishleft5.png', 'data/Fishright5.png', 'data/Fishleft6.png', 'data/Fishright6.png',
+          'data/Fishleft7.png', 'data/Fishright7.png', 'data/Fishleft8.png', 'data/Fishright8.png', 'data/Fishleft9.png', 'data/Fishright9.png',
+          'data/Fishleft10.png', 'data/Fishright10.png', 'data/Fishleft11.png', 'data/Fishright11.png', 'data/ground.jpg', 'data/menu.jpg']
 
 
 # Small Function to generate the vertical offset
@@ -187,12 +187,12 @@ def increase_Score():
 
 
 def eating_sound():
-    s_file = pygame.mixer.Sound("eating.wav")
+    s_file = pygame.mixer.Sound("data/eating.wav")
     s_file.play()
 
 
 def game_over_sound():
-    s_file = pygame.mixer.Sound("gameover.wav")
+    s_file = pygame.mixer.Sound("data/gameover.wav")
     s_file.play()
 
 
@@ -231,7 +231,7 @@ def load_texture():
 
 
 def myint():
-    s_file = pygame.mixer.Sound("feeding-frenzy.wav")
+    s_file = pygame.mixer.Sound("data/feeding-frenzy.wav")
     s_file.play()
 
     glMatrixMode(GL_PROJECTION)
