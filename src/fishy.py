@@ -6,7 +6,10 @@ from sys import exit
 import pygame
 from OpenGL.GL import *
 from OpenGL.GLUT import *
+from pygame.time import delay
 from scipy import interpolate
+
+from src import designscene, menu
 
 pygame.init()
 glutInit()  # Initialize Glut Features
@@ -16,14 +19,14 @@ levels = [[50, 999], [60, 999], [70, 999], [85, 999], [100, 999]]  # 5 levels
 level = 1  # initial level,
 
 seconds = 0  # the actual timer of every level
-time_start = 0  # just for calculating tome
+time_start = 0  # just for calculating time
 ######## Control the Small Fishes Motion ###########
 
 x_ax = 100  # 'INCREASING'  = increasing number of curve points which means 'MORE' curve resolution(integer)
 patterns_num = 5  # Number of Available patterns (integer)
 
 vertical_displacement = 2  # 'DECREASING'  = decreasing vertical motion which means 'MORE STABLE' Motion
-x_displacement = 0.2# Speed of small fish
+x_displacement = 0.2  # Speed of small fish
 ##################################################
 
 start = 0
@@ -33,49 +36,21 @@ texture = ()
 current_x = 0
 current_y = 0
 mouse_dir = 1
-
-photos = ['data/Fishleft1.png', 'data/Fishright1.png', 'data/Fishleft2.png', 'data/Fishright2.png', 'data/Fishleft3.png', 'data/Fishright3.png',
-          'data/Fishleft4.png', 'data/Fishright4.png', 'data/Fishleft5.png', 'data/Fishright5.png', 'data/Fishleft6.png', 'data/Fishright6.png',
-          'data/Fishleft7.png', 'data/Fishright7.png', 'data/Fishleft8.png', 'data/Fishright8.png', 'data/Fishleft9.png', 'data/Fishright9.png',
-          'data/Fishleft10.png', 'data/Fishright10.png', 'data/Fishleft11.png', 'data/Fishright11.png', 'data/ground.jpg', 'data/menu.jpg']
-
-
-# Small Function to generate the vertical offset
-def random_offset():
-    return randint(vertical_displacement + 20, int(glutGet(GLUT_SCREEN_HEIGHT)) - vertical_displacement - 20)
-
+sound = True
+photos = ['data/Fishleft1.png', 'data/Fishright1.png', 'data/Fishleft2.png', 'data/Fishright2.png',
+          'data/Fishleft3.png', 'data/Fishright3.png', 'data/Fishleft4.png', 'data/Fishright4.png',
+          'data/Fishleft5.png', 'data/Fishright5.png', 'data/Fishleft6.png', 'data/Fishright6.png',
+          'data/Fishleft7.png', 'data/Fishright7.png', 'data/Fishleft8.png', 'data/Fishright8.png',
+          'data/Fishleft9.png', 'data/Fishright9.png', 'data/Fishleft10.png', 'data/Fishright10.png',
+          'data/Fishleft11.png', 'data/Fishright11.png', 'data/ground.jpg', 'data/menu.jpg']
 
 x_points = [i for i in range(-50, int(glutGet(GLUT_SCREEN_WIDTH)) + 50, x_ax)]
 num_points = len(x_points)
 
-# divider used for easier code reading
-divider = [int(glutGet(GLUT_SCREEN_HEIGHT) * 0.2),
-           int(glutGet(GLUT_SCREEN_HEIGHT) * 0.4),
-           int(glutGet(GLUT_SCREEN_HEIGHT) * 0.6),
-           int(glutGet(GLUT_SCREEN_HEIGHT) * 0.8),
-           int(glutGet(GLUT_SCREEN_HEIGHT))]
-
-
-def genA():
-    # A[0_X_pos, 1_Y_pos, 2_Scale, 3_dir_X, 4_pattern_num, 5_y_offset, 6 Shape ]
-    # The 7th dimension refers to the vertical offset
-    A = [[0, divider[0], random.choice([2, 5]), 1, 0, random_offset(), 1],
-         [int(glutGet(GLUT_SCREEN_WIDTH)) * 0.8, divider[1], random.choice([2, 5]), 1, 1, random_offset(), 3],
-         [0, divider[2], random.choice([2, 5]), 1, 2, random_offset(), 5],
-         [int(glutGet(GLUT_SCREEN_WIDTH)) * 0.1, divider[3], random.choice([2, 5]), 1, 3, random_offset(), 7],
-         [0, divider[4], random.choice([2, 5]), 1, 4, random_offset(), 9],
-         [int(glutGet(GLUT_SCREEN_WIDTH)) * 0.9, divider[0], random.choice([2, 5]), -1, 4, random_offset(), 0],
-         [int(glutGet(GLUT_SCREEN_WIDTH)), divider[1], random.choice([2, 5]), -1, 3, random_offset(), 2],
-         [int(glutGet(GLUT_SCREEN_WIDTH)) * 0.25, divider[2], random.choice([2, 5]), -1, 2, random_offset(), 4],
-         [int(glutGet(GLUT_SCREEN_WIDTH)), divider[3], random.choice([2, 5]), -1, 1, random_offset(), 6],
-         [int(glutGet(GLUT_SCREEN_WIDTH)) * 0.75, divider[4], random.choice([2, 5]), -1, 0, random_offset(), 8]]
-    return A
-
-
-A = genA()
-count = len(A)
+fish_array = designscene.generate_a()
+count = len(fish_array)
 paths = []
-lost_flag = 0
+lost_flag = 1
 
 
 def generate_patterns():
@@ -91,22 +66,22 @@ def generate_patterns():
 
 
 def f(i):
-    global paths, A
+    global paths, fish_array
 
-    if A[i][3] == 1:
-        f_x = interpolate.splev(A[i][0], paths[A[i][4]])
+    if fish_array[i][3] == 1:
+        f_x = interpolate.splev(fish_array[i][0], paths[fish_array[i][4]])
     else:
-        f_x = int(glutGet(GLUT_SCREEN_WIDTH)) - interpolate.splev(A[i][0], paths[A[i][4]])
+        f_x = int(glutGet(GLUT_SCREEN_WIDTH)) - interpolate.splev(fish_array[i][0], paths[fish_array[i][4]])
 
-    if A[i][0] > int(glutGet(GLUT_SCREEN_WIDTH)) + 50:
-        A[i][3] = -A[i][3]
-        A[i][6] = A[i][6] - 1  # look at
+    if fish_array[i][0] > int(glutGet(GLUT_SCREEN_WIDTH)) + 50:
+        fish_array[i][3] = -fish_array[i][3]
+        fish_array[i][6] = fish_array[i][6] - 1  # look at
 
-    elif A[i][0] < -50:
-        A[i][3] = -A[i][3]
-        A[i][6] = A[i][6] + 1
+    elif fish_array[i][0] < -50:
+        fish_array[i][3] = -fish_array[i][3]
+        fish_array[i][6] = fish_array[i][6] + 1
 
-    return f_x + A[i][5] - (int(glutGet(GLUT_SCREEN_WIDTH)) / 2)
+    return f_x + fish_array[i][5] - (int(glutGet(GLUT_SCREEN_WIDTH)) / 2)
 
 
 def drawtext(string, x, y):
@@ -122,19 +97,19 @@ def drawtext(string, x, y):
 
 
 def add_small_fish():
-    global count, A, level, levels
+    global count, fish_array, level, levels
     count += 1
 
     new_rand_x = random.randint(0, 1)
     new_rand_y = random.randint(0, 7)
     new_rand_pattern = randint(0, patterns_num - 1)
-    if score <= round(levels[level - 1][0]/3):
+    if score <= round(levels[level - 1][0] / 3):
         rand_scale = random.randint(0, 100)
         if rand_scale < 85:
             scale = random.choice([2, 2.5])
         else:
             scale = random.choice([5.5, 6])
-    elif round(levels[level - 1][0]/3*2) >= score > round(levels[level - 1][0]/3):
+    elif round(levels[level - 1][0] / 3 * 2) >= score > round(levels[level - 1][0] / 3):
         rand_scale = random.randint(0, 100)
         if rand_scale < 30:
             scale = random.choice([2, 2.5])
@@ -166,19 +141,20 @@ def add_small_fish():
         position = glutGet(GLUT_SCREEN_WIDTH) * 0.9
     else:
         position = glutGet(GLUT_SCREEN_WIDTH)
-    A.append(list((position, 0, scale, direction, new_rand_pattern, random_offset(), new_fish_shape)))
+    fish_array.append(
+        list((position, 0, scale, direction, new_rand_pattern, designscene.random_offset(), new_fish_shape)))
 
 
 def remove_small_fish(i):
-    global A, count
-    global A
-    del A[i]
+    global fish_array, count
+    global fish_array
+    del fish_array[i]
     count -= 1
 
 
 def remove_big_fish_lost():
     global lost_flag
-    lost_flag = 1
+    lost_flag = 2
 
 
 def increase_Score():
@@ -188,24 +164,32 @@ def increase_Score():
 
 def eating_sound():
     s_file = pygame.mixer.Sound("data/eating.wav")
-    s_file.play()
+    if sound:
+        s_file.play()
+    else:
+        s_file.stop()
 
 
 def game_over_sound():
     s_file = pygame.mixer.Sound("data/gameover.wav")
-    s_file.play()
+    if sound:
+        s_file.play()
+    else:
+        s_file.stop()
 
 
-def collsion(i):
-    global current_x, current_y, score, count, patterns_num, big_fish_size, seconds, A
-    x = A[i][0]
-    y = A[i][1]
-    if abs(current_x - x) < 30 and abs(current_y - y) < 30 and A[i][2] > big_fish_size:
-
+def collision(i):
+    global current_x, current_y, score, count, patterns_num, big_fish_size, seconds, fish_array
+    x = fish_array[i][0]
+    y = fish_array[i][1]
+    if abs(current_x - x) < 30 and abs(current_y - y) < 30 and fish_array[i][2] > big_fish_size:
         remove_big_fish_lost()
         game_over_sound()
+        pygame.time.delay(750)
+        glutDestroyWindow(glutGetWindow())
+        os.execl(sys.executable, sys.executable, *sys.argv)
 
-    elif abs(current_x - x) < 30 and abs(current_y - y) < 30 and A[i][2] < big_fish_size:
+    elif abs(current_x - x) < 30 and abs(current_y - y) < 30 and fish_array[i][2] < big_fish_size:
         remove_small_fish(i)
         increase_Score()
         add_small_fish()
@@ -232,8 +216,10 @@ def load_texture():
 
 def myint():
     s_file = pygame.mixer.Sound("data/feeding-frenzy.wav")
-    s_file.play()
-
+    if sound:
+        s_file.play()
+    else:
+        s_file.stop()
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(0, int(glutGet(GLUT_SCREEN_WIDTH)), int(glutGet(GLUT_SCREEN_HEIGHT)), 0, -1.0, 1.0)
@@ -242,85 +228,37 @@ def myint():
     generate_patterns()
 
 
-def start_again():
-    global lost_flag, A, score, big_fish_size, score, start, time_start
-    A = genA()
-    start = 0
-    score = 0
-    big_fish_size = 3.1
-    lost_flag = 0
-
-    time_start = time.time()
-
-
 def start_time():
     global time_start
     time_start = time.time()
 
 
-###########################################################
-
-
-def menu():
-    global texture
-    glBindTexture(GL_TEXTURE_2D, texture[-1])
-    glColor(1, 1, 1)
-    glBegin(GL_QUADS)
-    glutFullScreen()
-    glTexCoord(1, 1)
-    glVertex3f(0, 0, 0)
-    glTexCoord(0, 1)
-    glVertex3f(int(glutGet(GLUT_SCREEN_WIDTH)), 0, 0)
-    glTexCoord(0, 0)
-    glVertex3f(int(glutGet(GLUT_SCREEN_WIDTH)), int(glutGet(GLUT_SCREEN_HEIGHT)), 0)
-    glTexCoord(1, 0)
-    glVertex3f(0, int(glutGet(GLUT_SCREEN_HEIGHT)), 0)
-    glEnd()
-
-    glFlush()
-
-
-def keyboard(key, x, y):
-    global level
-    if key == b"x":
-        glutDestroyWindow(glutGetWindow())
-        exit("Exit !")
-    if key == b"a":  # play
-        start_time()
-        glutIdleFunc(main_scene)
-        glutSetCursor(GLUT_CURSOR_NONE)
-
-    if key == b"r":  # start again
-        start_again()
-        glutIdleFunc(main_scene)
-        glutSetCursor(GLUT_CURSOR_NONE)
-
-
 ##########################################################################################
 def main_scene():
-    global texture, current_x, current_y, current_z, count, big_fish_size, A, lost_flag, mouse_dir, score, levels, level
-    if lost_flag == 1:
-        glutIdleFunc(menu)
-
+    global texture, current_x, current_y, current_z, count, big_fish_size, fish_array, lost_flag, mouse_dir, score, levels, level
+    '''if lost_flag == 2:
+        glutDestroyWindow(glutGetWindow())
+    if lost_flag == 0:
+        glutDestroyWindow(glutGetWindow())
+    '''
     if score > 0:
-        enlargement = score / round(levels[level - 1][0]/3)
+        enlargement = score / round(levels[level - 1][0] / 3)
         big_fish_size = 3.1 + enlargement
         if big_fish_size > 4:
             big_fish_size = 4
-    if score >= round(levels[level - 1][0]/3):
-        enlargement = score / round(levels[level - 1][0]/3*2)
+    if score >= round(levels[level - 1][0] / 3):
+        enlargement = score / round(levels[level - 1][0] / 3 * 2)
         big_fish_size = 7 + enlargement
         if big_fish_size > 8:
             big_fish_size = 8
-    if score >= round(levels[level - 1][0]/3*2):
+    if score >= round(levels[level - 1][0] / 3 * 2):
         enlargement = score / round(levels[level - 1][0])
         big_fish_size = 10 + enlargement
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     glClear(GL_COLOR_BUFFER_BIT)  # | GL_DEPTH_BUFFER_BIT)
-    if lost_flag != 1:  # play the game
-
+    if lost_flag == 1:  # play the game
         glBindTexture(GL_TEXTURE_2D, texture[22])  # background
 
         glBegin(GL_QUADS)
@@ -378,31 +316,31 @@ def main_scene():
         glEnd()
         glLoadIdentity()
 
-    if lost_flag != 1:
+    if lost_flag == 1:
 
         for i in range(count):
             glLoadIdentity()
-            A[i][1] = f(i)
-            glTranslate(A[i][0], A[i][1], 0)
+            fish_array[i][1] = f(i)
+            glTranslate(fish_array[i][0], fish_array[i][1], 0)
 
-            A[i][0] += (A[i][3] * (x_displacement))
+            fish_array[i][0] += (fish_array[i][3] * x_displacement)
 
-            if A[i][3] == 1:
-                glBindTexture(GL_TEXTURE_2D, texture[A[i][6]])
-            if A[i][3] == -1:
-                glBindTexture(GL_TEXTURE_2D, texture[A[i][6]])
+            if fish_array[i][3] == 1:
+                glBindTexture(GL_TEXTURE_2D, texture[fish_array[i][6]])
+            if fish_array[i][3] == -1:
+                glBindTexture(GL_TEXTURE_2D, texture[fish_array[i][6]])
 
             glBegin(GL_QUADS)
             glTexCoord(0, 0)
-            glVertex3f(-10 * A[i][2], 10 * A[i][2], 0)
+            glVertex3f(-10 * fish_array[i][2], 10 * fish_array[i][2], 0)
             glTexCoord(0, 1)
-            glVertex3f(-10 * A[i][2], -10 * A[i][2], 0)
+            glVertex3f(-10 * fish_array[i][2], -10 * fish_array[i][2], 0)
             glTexCoord(1, 1)
-            glVertex3f(10 * A[i][2], -10 * A[i][2], 0)
+            glVertex3f(10 * fish_array[i][2], -10 * fish_array[i][2], 0)
             glTexCoord(1, 0)
-            glVertex3f(10 * A[i][2], 10 * A[i][2], 0)
+            glVertex3f(10 * fish_array[i][2], 10 * fish_array[i][2], 0)
             glEnd()
-            collsion(i)
+            collision(i)
 
     glFlush()
 
@@ -421,8 +359,24 @@ def game_timer():
     global seconds, time_start, levels, level, lost_flag
 
     seconds = int(time.time() - time_start)
+    if seconds == 575:
+        s_file = pygame.mixer.Sound("data/feeding-frenzy.wav")
+        if sound:
+            s_file.play()
+        else:
+            s_file.stop()
     if seconds >= levels[level - 1][1]:
         lost_flag = 1
+
+
+def start_again():
+    global lost_flag, fish_array, score, big_fish_size, score, start, time_start
+    fish_array = designscene.generate_a()
+    start = 0
+    score = 0
+    big_fish_size = 3.1
+    lost_flag = 1
+    time_start = time.time()
 
 
 def next_level(i):
@@ -449,19 +403,20 @@ def mouse(new_x, new_y):
     current_y = new_y
 
 
-def main():
+def run(sound_flag):
+    global sound
+    sound = sound_flag
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA)  # Initialize Window Options
     glutInitWindowSize(int(glutGet(GLUT_SCREEN_WIDTH)), int(glutGet(GLUT_SCREEN_HEIGHT)))
     glutCreateWindow(b"fish")
+    glutFullScreen()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)  # Blend
     glEnable(GL_BLEND)
 
     myint()
-    glutKeyboardFunc(keyboard)
-    glutIdleFunc(menu)
+    start_time()
+    glutIdleFunc(main_scene)
+    glutSetCursor(GLUT_CURSOR_NONE)
     glutPassiveMotionFunc(mouse)
-    glutDisplayFunc(menu)
+    glutDisplayFunc(main_scene)
     glutMainLoop()
-
-
-main()
