@@ -2,22 +2,40 @@ import os
 import sys
 
 import pygame
-from src import fishy
-from src.button import Button
+import fishy
+from button import Button
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 pygame.init()
 
 screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h), pygame.NOFRAME)
 pygame.display.set_caption('Fish Frenzy')
 
-start_img = pygame.image.load("data/menuimg.jpg").convert_alpha()
-button_sound = pygame.image.load("data/buttonszvukom.png").convert_alpha()
-button_sound = pygame.transform.scale(button_sound, (400, 150))
-button_no_sound = pygame.image.load("data/buttonbezzvuka.png").convert_alpha()
-button_no_sound = pygame.transform.scale(button_no_sound, (400, 150))
-button_exit = pygame.image.load("data/exitbutton.png").convert_alpha()
-button_exit = pygame.transform.scale(button_exit, (400, 150))
+# start_img = pygame.image.load("data/menuimg.jpg").convert_alpha()
+start_img = pygame.image.load(resource_path("data/menuimg.jpg")).convert_alpha()
 
+# button_sound = pygame.image.load("data/buttonszvukom.png").convert_alpha()
+button_sound = pygame.image.load(resource_path("data/buttonszvukom.png")).convert_alpha()
+button_sound = pygame.transform.scale(button_sound, (400, 150))
+
+# button_no_sound = pygame.image.load("data/buttonbezzvuka.png").convert_alpha()
+button_no_sound = pygame.image.load(resource_path("data/buttonbezzvuka.png")).convert_alpha()
+button_no_sound = pygame.transform.scale(button_no_sound, (400, 150))
+
+# button_exit = pygame.image.load("data/exitbutton.png").convert_alpha()
+button_exit = pygame.image.load(resource_path("data/exitbutton.png")).convert_alpha()
+button_exit = pygame.transform.scale(button_exit, (400, 150))
 
 
 start_button = Button(pygame.display.Info().current_w * 0.35 - 400 / 2, pygame.display.Info().current_h * 0.35 - 150 / 2,

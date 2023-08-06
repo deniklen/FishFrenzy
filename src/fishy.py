@@ -9,7 +9,18 @@ from OpenGL.GLUT import *
 from pygame.time import delay
 from scipy import interpolate
 
-from src import designscene, menu
+import designscene
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 pygame.init()
 glutInit()  # Initialize Glut Features
@@ -37,12 +48,40 @@ current_x = 0
 current_y = 0
 mouse_dir = 1
 sound = True
-photos = ['data/Fishleft1.png', 'data/Fishright1.png', 'data/Fishleft2.png', 'data/Fishright2.png',
-          'data/Fishleft3.png', 'data/Fishright3.png', 'data/Fishleft4.png', 'data/Fishright4.png',
-          'data/Fishleft5.png', 'data/Fishright5.png', 'data/Fishleft6.png', 'data/Fishright6.png',
-          'data/Fishleft7.png', 'data/Fishright7.png', 'data/Fishleft8.png', 'data/Fishright8.png',
-          'data/Fishleft9.png', 'data/Fishright9.png', 'data/Fishleft10.png', 'data/Fishright10.png',
-          'data/Fishleft11.png', 'data/Fishright11.png', 'data/ground.jpg', 'data/menu.jpg']
+# photos = ['data/Fishleft1.png', 'data/Fishright1.png', 'data/Fishleft2.png', 'data/Fishright2.png',
+#           'data/Fishleft3.png', 'data/Fishright3.png', 'data/Fishleft4.png', 'data/Fishright4.png',
+#           'data/Fishleft5.png', 'data/Fishright5.png', 'data/Fishleft6.png', 'data/Fishright6.png',
+#           'data/Fishleft7.png', 'data/Fishright7.png', 'data/Fishleft8.png', 'data/Fishright8.png',
+#           'data/Fishleft9.png', 'data/Fishright9.png', 'data/Fishleft10.png', 'data/Fishright10.png',
+#           'data/Fishleft11.png', 'data/Fishright11.png', 'data/ground.jpg', 'data/menu.jpg']
+
+photos = [
+    resource_path('data/Fishleft1.png'),
+    resource_path('data/Fishright1.png'),
+    resource_path('data/Fishleft2.png'),
+    resource_path('data/Fishright2.png'),
+    resource_path('data/Fishleft3.png'),
+    resource_path('data/Fishright3.png'),
+    resource_path('data/Fishleft4.png'),
+    resource_path('data/Fishright4.png'),
+    resource_path('data/Fishleft5.png'),
+    resource_path('data/Fishright5.png'),
+    resource_path('data/Fishleft6.png'),
+    resource_path('data/Fishright6.png'),
+    resource_path('data/Fishleft7.png'),
+    resource_path('data/Fishright7.png'),
+    resource_path('data/Fishleft8.png'),
+    resource_path('data/Fishright8.png'),
+    resource_path('data/Fishleft9.png'),
+    resource_path('data/Fishright9.png'),
+    resource_path('data/Fishleft10.png'),
+    resource_path('data/Fishright10.png'),
+    resource_path('data/Fishleft11.png'),
+    resource_path('data/Fishright11.png'),
+    resource_path('data/ground.jpg'),
+    resource_path('data/menu.jpg')
+]
+
 
 x_points = [i for i in range(-50, int(glutGet(GLUT_SCREEN_WIDTH)) + 50, x_ax)]
 num_points = len(x_points)
@@ -163,7 +202,8 @@ def increase_Score():
 
 
 def eating_sound():
-    s_file = pygame.mixer.Sound("data/eating.wav")
+    # s_file = pygame.mixer.Sound("data/eating.wav")
+    s_file = pygame.mixer.Sound(resource_path("data/eating.wav"))
     if sound:
         s_file.play()
     else:
@@ -171,7 +211,8 @@ def eating_sound():
 
 
 def game_over_sound():
-    s_file = pygame.mixer.Sound("data/gameover.wav")
+    # s_file = pygame.mixer.Sound("data/gameover.wav")
+    s_file = pygame.mixer.Sound(resource_path("data/gameover.wav"))
     if sound:
         s_file.play()
     else:
@@ -215,7 +256,8 @@ def load_texture():
 
 
 def myint():
-    s_file = pygame.mixer.Sound("data/feeding-frenzy.wav")
+    # s_file = pygame.mixer.Sound("data/feeding-frenzy.wav")
+    s_file = pygame.mixer.Sound(resource_path("data/feeding-frenzy.wav"))
     if sound:
         s_file.play()
     else:
@@ -360,7 +402,8 @@ def game_timer():
 
     seconds = int(time.time() - time_start)
     if seconds == 575:
-        s_file = pygame.mixer.Sound("data/feeding-frenzy.wav")
+        # s_file = pygame.mixer.Sound("data/feeding-frenzy.wav")
+        s_file = pygame.mixer.Sound(resource_path("data/feeding-frenzy.wav"))
         if sound:
             s_file.play()
         else:
